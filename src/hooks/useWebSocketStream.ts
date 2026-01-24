@@ -1,65 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
-interface WebSocketMessage {
-  frame?: string;
-  count?: number;
-  error?: string;
-}
-
-export function useWebSocketStream(endpoint: string, source: string) {
-  const [processedFrame, setProcessedFrame] = useState<string>('');
-  const [count, setCount] = useState<number>(0);
-  const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<string>('');
+export function useWebSocketStream(
+  endpoint: string,
+  source: string
+) {
   const wsRef = useRef<WebSocket | null>(null);
 
+  const [processedFrame, setProcessedFrame] = useState<string | null>(null);
+  const [count, setCount] = useState<number | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
+    if (!endpoint || !source) return;
+
     const ws = new WebSocket(endpoint);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
-      setIsConnected(true);
-      ws.send(source);
+      setConnected(true);
+      setError(null);
+      ws.send(JSON.stringify({ source }));
     };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = (e) => {
       try {
-        const data: WebSocketMessage = JSON.parse(event.data);
-
+        const data = JSON.parse(e.data);
         if (data.frame) {
-          setProcessedFrame(`data:image/jpeg;base64,${data.frame}`);
+          setProcessedFrame(
+            `data:image/jpeg;base64,${data.frame}`
+          );
         }
-
-        if (data.count !== undefined) {
+        if (typeof data.count === "number") {
           setCount(data.count);
         }
-
-        if (data.error) {
-          setError(data.error);
-        }
-      } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
-      }
+      } catch {}
     };
 
-    ws.onerror = (event) => {
-      console.error('WebSocket error:', event);
-      setError('Connection error occurred');
-      setIsConnected(false);
-    };
+    ws.onerror = () => setError("WebSocket error");
+    ws.onclose = () => setConnected(false);
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
-      setIsConnected(false);
-    };
-
-    return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
-      }
-    };
+    return () => ws.close();
   }, [endpoint, source]);
 
-  return { processedFrame, count, isConnected, error };
+  return {
+    processedFrame,
+    count,
+    connected,
+    error,
+  };
 }
