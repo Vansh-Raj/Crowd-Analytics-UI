@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { useWebSocketStream } from "../hooks/useWebSocketStream";
 import CountGraph from "../components/CountGraph";
+import { buildUrl, buildWs } from "../lib/endpoints";
 
 interface DataPoint {
   timestamp: number;
@@ -22,10 +23,7 @@ function AnalyticsPage() {
     if (!source) navigate("/");
   }, [source, navigate]);
 
-  const endpoint =
-    mode === "advanced"
-      ? "ws://127.0.0.1:8000/ws/advanced"
-      : "ws://127.0.0.1:8000/ws/live";
+  const endpoint = buildWs(mode === "advanced" ? "/advanced" : "/live");
 
   const {
     processedFrame,
@@ -67,9 +65,7 @@ function AnalyticsPage() {
       <div className="relative bg-black aspect-video rounded-lg overflow-hidden border border-slate-700">
         {source ? (
           <img
-            src={`http://127.0.0.1:8000/mjpeg?source=${encodeURIComponent(
-              source
-            )}`}
+            src={buildUrl(`/mjpeg?source=${encodeURIComponent(source)}`)}
             alt="Original video stream"
             className="absolute inset-0 w-full h-full object-contain"
           />
@@ -107,7 +103,7 @@ function AnalyticsPage() {
       {source && source.startsWith("/tmp/") ? (
         // ✅ Local uploaded video → TRUE playback
         <video
-          src={`http://127.0.0.1:8000/video?path=${encodeURIComponent(source)}`}
+          src={buildUrl(`/video?path=${encodeURIComponent(source)}`)}
           controls
           autoPlay
           muted
@@ -117,7 +113,7 @@ function AnalyticsPage() {
       ) : (
         // ✅ RTSP → MJPEG fallback
         <img
-          src={`http://127.0.0.1:8000/mjpeg?source=${encodeURIComponent(source ?? "")}`}
+          src={buildUrl(`/mjpeg?source=${encodeURIComponent(source ?? "")}`)}
           alt="Live stream"
           className="w-full h-full object-contain"
         />
