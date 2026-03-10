@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
+import { buildUrl } from "../lib/endpoints";
 
 interface Props {
   mode: "live" | "advanced";
@@ -30,7 +31,7 @@ function InputModal({ mode, onClose }: Props) {
       const form = new FormData();
       form.append("file", file);
 
-      const res = await fetch("http://127.0.0.1:8000/upload", {
+      const res = await fetch(buildUrl("/upload"), {
         method: "POST",
         body: form,
       });

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { useWebSocketStream } from "../hooks/useWebSocketStream";
 import CountGraph from "../components/CountGraph";
+import { buildUrl, buildWs } from "../lib/endpoints";
 
 interface DataPoint {
   timestamp: number;
@@ -19,13 +20,10 @@ function AnalyticsPage() {
   const source = params.get("source");
 
   useEffect(() => {
-    if (!source) navigate("/");
+    if (!source) navigate("/home");
   }, [source, navigate]);
 
-  const endpoint =
-    mode === "advanced"
-      ? "ws://127.0.0.1:8000/ws/advanced"
-      : "ws://127.0.0.1:8000/ws/live";
+  const endpoint = buildWs(mode === "advanced" ? "/advanced" : "/live");
 
   const {
     processedFrame,
@@ -50,16 +48,24 @@ function AnalyticsPage() {
     {/* Header */}
     <header className="bg-slate-800 px-6 py-4 flex justify-between items-center">
       <button
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/home")}
         className="flex items-center gap-2 text-slate-300 hover:text-white"
       >
         <ArrowLeft />
         Back
       </button>
 
-      <span className="text-sm">
-        {connected ? "🟢 Connected" : "🔴 Disconnected"}
-      </span>
+      <div className="flex items-center gap-4">
+        <span className="text-sm">
+          {connected ? "🟢 Connected" : "🔴 Disconnected"}
+        </span>
+        <button
+          onClick={() => { localStorage.removeItem('token'); navigate('/'); }}
+          className="text-sm text-slate-300 hover:text-white underline"
+        >
+          Log out
+        </button>
+      </div>
     </header>
 
     <div className="p-6 grid grid-cols-2 gap-6 max-w-7xl mx-auto">
@@ -67,9 +73,7 @@ function AnalyticsPage() {
       <div className="relative bg-black aspect-video rounded-lg overflow-hidden border border-slate-700">
         {source ? (
           <img
-            src={`http://127.0.0.1:8000/mjpeg?source=${encodeURIComponent(
-              source
-            )}`}
+            src={buildUrl(`/mjpeg?source=${encodeURIComponent(source)}`)}
             alt="Original video stream"
             className="absolute inset-0 w-full h-full object-contain"
           />
@@ -107,7 +111,7 @@ function AnalyticsPage() {
       {source && source.startsWith("/tmp/") ? (
         // ✅ Local uploaded video → TRUE playback
         <video
-          src={`http://127.0.0.1:8000/video?path=${encodeURIComponent(source)}`}
+          src={buildUrl(`/video?path=${encodeURIComponent(source)}`)}
           controls
           autoPlay
           muted
@@ -117,7 +121,7 @@ function AnalyticsPage() {
       ) : (
         // ✅ RTSP → MJPEG fallback
         <img
-          src={`http://127.0.0.1:8000/mjpeg?source=${encodeURIComponent(source ?? "")}`}
+          src={buildUrl(`/mjpeg?source=${encodeURIComponent(source ?? "")}`)}
           alt="Live stream"
           className="w-full h-full object-contain"
         />

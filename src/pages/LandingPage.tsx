@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { clearToken } from '../lib/api';
 import { Activity, Users } from 'lucide-react';
 import InputModal from '../components/InputModal';
 
 function LandingPage() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMode, setSelectedMode] = useState<'live' | 'advanced' | null>(null);
 
@@ -18,6 +21,15 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <header className="px-6 py-4 flex justify-between items-center">
+        <Link to="/home" className="text-white font-semibold">Dashboard</Link>
+        <button
+          onClick={() => { clearToken(); navigate('/'); }}
+          className="text-sm text-white/80 hover:text-white underline"
+        >
+          Log out
+        </button>
+      </header>
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-white mb-4">

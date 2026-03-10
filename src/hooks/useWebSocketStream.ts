@@ -34,7 +34,7 @@ export function useWebSocketStream(
         if (typeof data.count === "number") {
           setCount(data.count);
         }
-      } catch {}
+      } catch { void 0; }
     };
 
     ws.onerror = () => setError("WebSocket error");
