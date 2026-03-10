@@ -4,3 +4,6 @@ sqlalchemy
 passlib[bcrypt]
 python-jose
 pydantic
+argon2-cffi
+email-validator
+python-multipart

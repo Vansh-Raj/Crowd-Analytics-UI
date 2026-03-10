@@ -20,7 +20,7 @@ function AnalyticsPage() {
   const source = params.get("source");
 
   useEffect(() => {
-    if (!source) navigate("/");
+    if (!source) navigate("/home");
   }, [source, navigate]);
 
   const endpoint = buildWs(mode === "advanced" ? "/advanced" : "/live");
@@ -48,16 +48,24 @@ function AnalyticsPage() {
     {/* Header */}
     <header className="bg-slate-800 px-6 py-4 flex justify-between items-center">
       <button
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/home")}
         className="flex items-center gap-2 text-slate-300 hover:text-white"
       >
         <ArrowLeft />
         Back
       </button>
 
-      <span className="text-sm">
-        {connected ? "🟢 Connected" : "🔴 Disconnected"}
-      </span>
+      <div className="flex items-center gap-4">
+        <span className="text-sm">
+          {connected ? "🟢 Connected" : "🔴 Disconnected"}
+        </span>
+        <button
+          onClick={() => { localStorage.removeItem('token'); navigate('/'); }}
+          className="text-sm text-slate-300 hover:text-white underline"
+        >
+          Log out
+        </button>
+      </div>
     </header>
 
     <div className="p-6 grid grid-cols-2 gap-6 max-w-7xl mx-auto">

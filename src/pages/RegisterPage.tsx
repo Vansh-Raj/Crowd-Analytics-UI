@@ -22,6 +22,7 @@ function RegisterPage() {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
 
   const navigate = useNavigate();
 
@@ -34,13 +35,19 @@ function RegisterPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setEmailExists(false);
     if (!canSubmit) return;
     setLoading(true);
     try {
       await registerUser({ name: name.trim(), email: email.trim(), password });
-      navigate('/login', { replace: true });
+      navigate('/login', { replace: true, state: { email: email.trim() } });
     } catch (err) {
-      setError((err as Error).message);
+      const msg = (err as Error).message || 'Registration failed';
+      if (msg.toLowerCase().includes('email already exists')) {
+        setEmailExists(true);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -53,6 +60,18 @@ function RegisterPage() {
 
         {error && (
           <div className="p-3 bg-red-500/10 text-red-600 text-sm rounded">{error}</div>
+        )}
+        {emailExists && (
+          <div className="p-3 bg-yellow-100 text-yellow-900 text-sm rounded flex items-center justify-between gap-2">
+            <span>Email already exists. Log in instead.</span>
+            <Link
+              to="/login"
+              state={{ email: email.trim() }}
+              className="text-blue-600 underline"
+            >
+              Go to Login
+            </Link>
+          </div>
         )}
 
         <div className="space-y-1">

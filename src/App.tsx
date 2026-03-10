@@ -4,6 +4,9 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
+import WelcomePage from './pages/WelcomePage';
+import LogoutPage from './pages/LogoutPage';
 
 function App() {
   return (
@@ -12,11 +15,20 @@ function App() {
         <Route
           path="/"
           element={
+            <PublicRoute>
+              <WelcomePage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/home"
+          element={
             <ProtectedRoute>
               <LandingPage />
             </ProtectedRoute>
           }
         />
+        <Route path="/logout" element={<LogoutPage />} />
         <Route
           path="/analytics/:mode"
           element={
@@ -25,8 +37,22 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <RegisterPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

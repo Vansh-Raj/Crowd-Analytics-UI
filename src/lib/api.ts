@@ -28,46 +28,48 @@ export function clearToken() {
 }
 
 export async function registerUser(payload: RegisterPayload): Promise<void> {
+  let res: Response;
   try {
-    const res = await fetch(`${BASE_URL}/auth/register`, {
+    res = await fetch(`${BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      let message = 'Registration failed';
-      try {
-        const data = await res.json();
-        if (data?.message) message = data.message;
-      } catch { void 0; }
-      throw new Error(message);
-    }
   } catch {
     throw new Error('Network error: unable to reach auth service');
+  }
+  if (!res.ok) {
+    let message = 'Registration failed';
+    try {
+      const data = await res.json() as Partial<ApiError>;
+      if (data?.message) message = data.message;
+    } catch { /* ignore parse error */ }
+    throw new Error(message);
   }
 }
 
 export async function loginUser(payload: LoginPayload): Promise<{ token: string }> {
+  let res: Response;
   try {
-    const res = await fetch(`${BASE_URL}/auth/login`, {
+    res = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      let message = 'Login failed';
-      try {
-        const data = await res.json();
-        if (data?.message) message = data.message;
-      } catch { void 0; }
-      throw new Error(message);
-    }
-    const data = await res.json();
-    if (!data?.token || typeof data.token !== 'string') {
-      throw new Error('Invalid response');
-    }
-    return { token: data.token };
   } catch {
     throw new Error('Network error: unable to reach auth service');
   }
+  if (!res.ok) {
+    let message = 'Login failed';
+    try {
+      const data = await res.json() as Partial<ApiError>;
+      if (data?.message) message = data.message;
+    } catch { /* ignore parse error */ }
+    throw new Error(message);
+  }
+  const data = await res.json() as { token?: unknown };
+  if (!data?.token || typeof data.token !== 'string') {
+    throw new Error('Invalid response');
+  }
+  return { token: data.token };
 }

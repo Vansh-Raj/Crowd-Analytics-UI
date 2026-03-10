@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { loginUser, setToken } from '../lib/api';
 
@@ -12,7 +12,12 @@ function LoginPage() {
   const location = useLocation();
   const from =
     (location.state as { from?: { pathname: string } } | null)?.from?.pathname ||
-    '/';
+    '/home';
+
+  useEffect(() => {
+    const state = location.state as { email?: string } | null;
+    if (state?.email) setEmail(state.email);
+  }, [location.state]);
 
   const canSubmit = email.trim().length > 0 && password.length > 0 && !loading;
 
@@ -26,7 +31,12 @@ function LoginPage() {
       setToken(token);
       navigate(from, { replace: true });
     } catch (err) {
-      setError((err as Error).message);
+      const msg = (err as Error).message || 'Login failed';
+      if (msg.toLowerCase().includes('user not found')) {
+        setError('Account does not exist');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
